@@ -1,5 +1,5 @@
 # note
-# ~increase 변수는 나중에 추가 능력치의 종류에 따라 세부적으로 변수를 분류할 것
+# ~increase 변수는 나중에 추가 능력치의 종류(성유물, 무기 등)에 따라 세부적으로 변수를 분류할 것
 
 
 class GenshinDMGCalculator:
@@ -7,32 +7,35 @@ class GenshinDMGCalculator:
         pass
 
     # 최종 HP 계산
-    def setHP(self, hp, hp_increase):
-        hp = float(hp + hp_increase)
+    def set_HP(self, hp, plus_hp, percent_hp):
+        hp = float((hp + plus_hp) * (1 + percent_hp))
         return hp
 
     # 최종 공격력 계산
-    def setAttack(self, attack, attack_increase):
+    def set_Attack(self, attack, attack_increase):
         attack = float(attack + attack_increase)
         return attack
 
     # 최종 방어력 계산
-    def setDefense(self, defense, def_increase):
+    def set_Defense(self, defense, def_increase):
         defense = float(defense + def_increase)
         return defense
 
     # 원소 반응 계수 계산
-    def ElementalReaction(self, mastery):
-        element_reaction = float((((1601 * mastery) / (mastery + 2001)) / 100)) # 추후 인게임 실험을 통해 계산 식 도출 후 변경할 것
+    def Elemental_Reaction(self, type, mastery):
+        if type == "amplify":
+            element_reaction = float((((1301 * mastery) / (mastery + 2001)) / 100))
+        else:
+            element_reaction = float((((1601 * mastery) / (mastery + 2001)) / 100)) # 추후 인게임 실험을 통해 계산 식 도출 후 변경할 것
         return element_reaction
 
     # 방어 계수 계산
-    def Defense(self, level, enemylevel, defreduction):
-        self.defense = float(((level + 100) /(((1 - defreduction) * (enemylevel + 100)) + (level + 100))))
+    def Defense(self, level, enemy_level, target_def_reduction):
+        self.defense = float(((level + 100) / (((1 - target_def_reduction) * (enemy_level + 100)) + (level + 100))))
         return self.defense
 
     # 스킬 계수 세팅
-    def setskillDMG(self, skilldmg):
+    def set_skillDMG(self, skilldmg):
         return skilldmg
 
     # 내성 계수 계산
@@ -46,31 +49,46 @@ class GenshinDMGCalculator:
         return resist
 
     # 기본 데미지[= (최종 공격력 x 스킬 계수) + (최종 체력 x 체비례 데미지 보너스) + (최종 방어력 x 방비례 데미지 보너스)] 계산
-    def baseDMG(self, finalattack, skilldmg, finalhp, hpdmgbonus, finaldefense, defdmgbonus):
+    def base_DMG(self, finalattack, skilldmg, finalhp, hpdmgbonus, finaldefense, defdmgbonus):
         basedmg = (finalattack * skilldmg) + (finalhp * hpdmgbonus) + (finaldefense * defdmgbonus)
         return basedmg
 
     # 최종 데미지[기본 데미지 x 피해 증가 x 치명타 x 원소 반응 계수 x 방어 계수 x 내성 계수] 계산
-    def FinalDMG(self, basedmg, dmgincrease, criticaldmg, elementalreaction, defense, resist):
+    def Final_DMG(self, basedmg, dmgincrease, criticaldmg, elementalreaction, defense, resist):
         finaldmg = basedmg * dmgincrease * criticaldmg * elementalreaction * defense * resist
         return finaldmg
 
 def main():
+    # 클래스 선언
     g = GenshinDMGCalculator()
+
+    # 원소 반응 계수 계산 변수 입력
+    reaction_type_input = input("원소 반응 타입을 선택하세요(amplify, reduce): ")
     mastery_input = int(input("원소 마스터리를 입력하세요: "))
-    elemental_calculate = g.ElementalReaction(mastery_input)
+    elemental_calculate = g.Elemental_Reaction(reaction_type_input, mastery_input)
     print("원소 반응 계수: ", elemental_calculate)
 
+    # 방어 계수 계산 변수 입력
+    level_input = float(input("캐릭터 레벨을 입력하세요: "))
+    enemy_level_input = float(input("적 레벨을 입력하세요: "))
+    target_def_reduction_input = float(input("방어력 감소량(방깎)을 입력하세요: "))
+    defense_calculate = g.Defense(level_input, enemy_level_input, target_def_reduction_input)
+    print("방어 계수: ", defense_calculate)
+
+    # 체력 입력
     hp_input = int(input("캐릭터 체력을 입력하세요: "))
-    hp_calculate = g.setHP(hp_input)
+    plus_hp_input = int(input("캐릭터 체력 증가량을 입력하세요: "))
+    percent_hp_input = float(input("캐릭터 체력 증가량(%)을 입력하세요: "))
+    hp_calculate = g.set_HP(hp_input, plus_hp_input, percent_hp_input)
     print("최종 체력: ", hp_calculate)
 
+    # 공격력 입력
     attack_input = int(input("최종 공격력을 입력하세요: "))
-    attack_calculate = g.setAttack(attack_input)
+    attack_calculate = g.set_Attack(attack_input)
     print("최종 공격력: ", attack_calculate)
 
     finaldefense_input = int(input("최종 방어력을 입력하세요: "))
-    finaldefense_calculate = g.setDefense(finaldefense_input)
+    finaldefense_calculate = g.set_Defense(finaldefense_input)
     print("최종 방어력: ", finaldefense_calculate)
 
     skill_input = float(input("스킬 계수를 입력하세요: "))
@@ -82,9 +100,6 @@ def main():
     dmgincrease_input = float(input("피해 증가를 입력하세요: "))
     print("피해 증가: ", dmgincrease_input)
 
-    defense_input = float(input("방어 계수를 입력하세요: "))
-    Defense_calculate = g.Defense(defense_input)
-    print("방어 계수: ", Defense_calculate)
     resist_input = float(input("내성 계수를 입력하세요: "))
     Resist_calculate = g.Resist(resist_input)
     print("내성 계수: ", Resist_calculate)
