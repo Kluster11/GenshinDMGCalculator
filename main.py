@@ -101,7 +101,7 @@ def main():
     critical_input = float(input("치명타 계수를 입력하세요: "))
     print("치명타 데미지: ", critical_input)
 
-    dmgincrease_input = float(input("피해 증가를 입력하세요: "))
+    dmgincrease_input = float(input("피해 증가를 입력하세요: ")) # 없으면 1 입력
     print("피해 증가: ", dmgincrease_input)
 
     resist_input = float(input("적 내성 수치를 입력하세요: "))
@@ -114,9 +114,11 @@ def main():
     defdmgbonus_input = float(input("방어력 데미지 보너스를 입력하세요: ")) # 없으면 1 입력
     print("방어력 데미지 보너스: ", defdmgbonus_input)
 
+    base_dmg_calculate = g.base_DMG(attack_calculate, skill_input, hp_calculate, hpdmgbonus_input, finaldefense_calculate,  defdmgbonus_input)
+    print("기초 데미지: ", base_dmg_calculate)
 
-
-
+    final_dmg_calculate = g.Final_DMG(base_dmg_calculate, dmgincrease_input, critical_input, elemental_calculate, defense_calculate, Resist_calculate)
+    print("최종 데미지: ", final_dmg_calculate)
 
 if __name__ == "__main__":
     main()
